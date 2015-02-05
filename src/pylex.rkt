@@ -38,6 +38,9 @@
 (define-lex-abbrev decimalinteger (:or (:: nonzerodigit (:*digit)) (:+ #\0)))
 (define-lex-abbrev intpart (:+ digit))
 
+
+(define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J"))
+
 (define basic-printing-lexer
   (lexer 
    
