@@ -1,12 +1,12 @@
 #lang racket
-(require parser-tools/lex-sre)
-(require parser-tools/lex)
 
+(require parser-tools/lex)
+(require (prefix-in : parser-tools/lex-sre))
 
 
 (define-lex-abbrev hash-comment ("#"))
 
-(define-lex-abbrev operator (or "+"      "-"     "*"     "**"     "/"      "//"    "%" 
+(define-lex-abbrev operator (:or "+"      "-"     "*"     "**"     "/"      "//"    "%" 
                                 "<<"     ">>"    "&"     "^"      "|"      "^"     "~"  
                                 "<"      ">"     "<="    ">="     "=="     "!="))
 
@@ -17,7 +17,7 @@
 
 (define-lex-abbrev string-quote (or "'''"       "\""""   "'"    "\"" ))
 
-(define-lex-abbrev keyword (or "False"	   "None"    "True"    "and"	"as" 
+(define-lex-abbrev keyword (:or "False"	   "None"    "True"    "and"	"as" 
 				"assert"   "break"   "class"   "continue"
 			        "def"      "del"     "elif"    "else"   "except"
 				"finally"  "for"     "from"    "global"	"if" 
@@ -45,12 +45,12 @@
 
 (define-lex-abbrev floatnumber (or pointfloat exponentfloat))
 
-(define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J"))
+(define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J")))
 
 (define basic-printing-lexer
   (lexer 
    
-   [(: operator)
+   [(:: operator)
     ; =>
     (begin (display "found an operator  :  ")
            (display lexeme)
