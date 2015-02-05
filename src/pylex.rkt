@@ -35,6 +35,9 @@
 (define-lex-abbrev bininteger (:: #\0 (:or #\b #\B) (:+ bindigit)))
 (define-lex-abbrev decimalinteger (:or (:: nonzerodigit (:*digit)) (:+ #\0)))
 (define-lex-abbrev intpart (:+ digit))
+(define-lex-abbrev fraction (:: "." (:+ digit)))
+(define-lex-abbrev pointfloat (:or (:: (:? intpart) fraction) (:: intpart ".")))
+(define-lex-abbrev exponent (:: (:or "e" "E") (:? (:or "+" "-")) (:+ digit)))
 
 (define basic-printing-lexer
   (lexer 
