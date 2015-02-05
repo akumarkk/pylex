@@ -15,6 +15,8 @@
                                  "+="    "-="    "*="    "/="     "//="    "%="
                                  "&="    "|="    "^="    ">>="    "<<="    "**="))
 
+(define-lex-abbrev string-quote (or "'''"       "\""""   "'"    "\"" ))
+
 (define-lex-abbrev keyword (or "False"	   "None"    "True"    "and"	"as" 
 				"assert"   "break"   "class"   "continue"
 			        "def"      "del"     "elif"    "else"   "except"
@@ -38,6 +40,12 @@
 (define-lex-abbrev fraction (:: "." (:+ digit)))
 (define-lex-abbrev pointfloat (:or (:: (:? intpart) fraction) (:: intpart ".")))
 (define-lex-abbrev exponent (:: (:or "e" "E") (:? (:or "+" "-")) (:+ digit)))
+
+(define-lex-abbrev exponentfloat (:: (or intpart floatpart) exponent))
+
+(define-lex-abbrev floatnumber (or pointfloat exponentfloat))
+
+(define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J"))
 
 (define basic-printing-lexer
   (lexer 
