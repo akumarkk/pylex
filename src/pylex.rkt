@@ -15,6 +15,8 @@
                                  "+="    "-="    "*="    "/="     "//="    "%="
                                  "&="    "|="    "^="    ">>="    "<<="    "**="))
 
+(define-lex-abbrev string-quote (or "'''"       "\""""   "'"    "\"" ))
+
 (define-lex-abbrev keyword (or "False"	   "None"    "True"    "and"	"as" 
 				"assert"   "break"   "class"   "continue"
 			        "def"      "del"     "elif"    "else"   "except"
