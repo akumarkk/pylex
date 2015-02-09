@@ -3,6 +3,10 @@
 (require parser-tools/lex)
 (require (prefix-in : parser-tools/lex-sre))
 
+(define (output-endmarker? input-port)
+  (equal?  'eof input-port))
+
+
 
 (define-lex-abbrev hash-comment ("#"))
 
@@ -10,7 +14,7 @@
                                 "<<"     ">>"    "&"     "^"      "|"      "^"     "~"  
                                 "<"      ">"     "<="    ">="     "=="     "!="))
 
-(define-lex-abbrev delimiter (or "("     ")"     "["     "]"      "{"      "}" 
+(define-lex-abbrev delimiter (:or "("     ")"     "["     "]"      "{"      "}" 
                                  ","     ":"     "."     ";"      "@"      "="     "->" 
                                  "+="    "-="    "*="    "/="     "//="    "%="
                                  "&="    "|="    "^="    ">>="    "<<="    "**="))
@@ -52,17 +56,34 @@
    
    [(:: operator)
     ; =>
-    (begin (display "found an operator  :  ")
+    (begin (display "(PUNCT   ")
            (display lexeme)
+           (display ")")
            (newline)
            (basic-printing-lexer input-port))]
    
    
-     [(complement keyword)
+     [(:: keyword)
     ; =>
-    (begin (display "found a match :  ")
+    (begin (display "(KEYWORD ")
            (display lexeme)
-           (newline))]
+           (display ")")
+           (newline)
+           (basic-printing-lexer input-port))]
+     
+     [(false? (output-endmarker? input-port) )
+              ;=>
+      (begin (display "(ENDMARKER )")
+             (newline))]
+     
+     
+     [(:: delimiter)
+    ; =>
+    (begin (display "(PUNCT ")
+           (display lexeme)
+           (display ")")
+           (newline)
+           (basic-printing-lexer input-port))]
    
    [(union #\space #\newline)
     ; =>
@@ -73,7 +94,8 @@
     ; =>
     (begin (display "found an id: ")
            (display lexeme)
-           (newline))]
+           (newline)
+           (basic-printing-lexer input-port))]
    
    [(union #\space #\newline)
     ; =>
@@ -87,6 +109,6 @@
 (run-basic-printing-lexer (open-input-string "foo"))
 (run-basic-printing-lexer (open-input-string "zoo"))
 
-(define in (open-input-string "+"))
+(define in (open-input-string "+abc-;"))
 (basic-printing-lexer in)
 
