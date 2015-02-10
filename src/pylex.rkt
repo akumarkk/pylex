@@ -6,7 +6,21 @@
 (define (output-endmarker? input-port)
   (equal?   input-port))
 
-(define-lex-abbrev NEWLINE (:or "#\newline" "\n")
+(define (unget port)
+  (file-position port (- (file-position port) 1)))
+
+;count spaces:
+(define space-count 0)
+
+(define (inc-space!)
+  (set! space-count (+ space-count  1)))
+
+(define (reset-spaces!)
+  (set! space-count 0))
+
+
+
+(define-lex-abbrev NEWLINE (:or "#\newline" "\n"))
 
 (define-lex-abbrev hash-comment ("#"))
 
@@ -71,10 +85,12 @@
            (newline)
            (basic-printing-lexer input-port))]
      
-     [(false? (output-endmarker? input-port) )
-              ;=>
-      (begin (display "(ENDMARKER )")
-             (newline))]
+     [(#\space 
+       ;=>
+       (begin
+                  (inc-space!)
+                  (indent-lex input-port))]
+    
      
      
      [(:: delimiter)
