@@ -4,9 +4,9 @@
 (require (prefix-in : parser-tools/lex-sre))
 
 (define (output-endmarker? input-port)
-  (equal?  'eof input-port))
+  (equal?   input-port))
 
-
+(define-lex-abbrev NEWLINE (:or "#\newline" "\n")
 
 (define-lex-abbrev hash-comment ("#"))
 
