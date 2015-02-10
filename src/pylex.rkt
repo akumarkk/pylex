@@ -12,10 +12,14 @@
 ;count spaces:
 (define space-count 0)
 
+(define global-top 0)
+(define current-space 0)
+
 (define (inc-space!)
   (set! space-count (+ space-count  1)))
 
 (define (reset-spaces!)
+  (measure-spaces!)
   (set! space-count 0))
 
 ; Indent stack to hold indentation information
@@ -26,12 +30,24 @@
 ;(define current-indent (car indent-stack))
 
 (define (push-indent! spaces) 
-  (set! indent-stack (cons spaces indent-stack)))
+  (set! current-space spaces)
+  (set! indent-stack (cons spaces indent-stack))
+  (display "INDENT"))
 
 (define (pop-indent!) 
   (define top (car indent-stack))
+  (set! current-space (car indent-stack))
   (set! indent-stack (cdr indent-stack)))
   
+(define (handle-dedent!)
+  (pop-indent!) 
+  (if (= current-space space-count) (display "DEDENT") 
+      (if (> space-count current-space) (display "INDENTATION ERROR") (handle-dedent!))))
+       
+       
+       
+(define (measure-spaces!) 
+  (if (> space-count current-space) (push-indent! space-count) (void)))
 
 
 
@@ -147,6 +163,6 @@
 
 (run-basic-printing-lexer (open-input-string "zoo"))
 
-(define in (open-input-string "+  abc-;"))
+(define in (open-input-string "+  a     bc          -;"))
 (basic-printing-lexer in)
 
