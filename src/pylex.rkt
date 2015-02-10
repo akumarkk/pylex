@@ -18,6 +18,25 @@
 (define (reset-spaces!)
   (set! space-count 0))
 
+; Indent stack to hold indentation information
+
+
+(define indent-stack '())
+
+;(define current-indent (car indent-stack))
+
+(define (push-indent! spaces) 
+  (set! indent-stack (cons spaces indent-stack)))
+
+(define (pop-indent!) 
+  (define top (car indent-stack))
+  (set! indent-stack (cdr indent-stack)))
+  
+
+
+
+;(define (top-stack-indent)
+;  (set! indent-top  (car indent-stack)))
 
 
 (define-lex-abbrev NEWLINE (:or "#\newline" "\n"))
@@ -74,6 +93,7 @@
            (display lexeme)
            (display ")")
            (newline)
+           (reset-spaces!)
            (basic-printing-lexer input-port))]
    
    
@@ -83,13 +103,17 @@
            (display lexeme)
            (display ")")
            (newline)
+           (reset-spaces!)
            (basic-printing-lexer input-port))]
      
-     [(#\space 
+     [#\space
        ;=>
        (begin
                   (inc-space!)
-                  (indent-lex input-port))]
+                  (display space-count)
+                  (newline)
+                  (basic-printing-lexer input-port)
+                  )]
     
      
      
@@ -99,11 +123,9 @@
            (display lexeme)
            (display ")")
            (newline)
+           (reset-spaces!)
            (basic-printing-lexer input-port))]
    
-   [(union #\space #\newline)
-    ; =>
-    (void)]
    
    [(repetition 1 +inf.0 
                 (char-range #\a #\z))
@@ -111,20 +133,20 @@
     (begin (display "found an id: ")
            (display lexeme)
            (newline)
+           (reset-spaces!)
            (basic-printing-lexer input-port))]
    
-   [(union #\space #\newline)
+   ;[(union #\space #\newline)
     ; =>
-    (void)]))
+    ;(void)]
+   ))
 
 (define (run-basic-printing-lexer port)
   (when (not (eq? 'eof (basic-printing-lexer port)))
     (run-basic-printing-lexer port)))
 
-(run-basic-printing-lexer (open-input-string "foo    bar baz"))
-(run-basic-printing-lexer (open-input-string "foo"))
 (run-basic-printing-lexer (open-input-string "zoo"))
 
-(define in (open-input-string "+abc-;"))
+(define in (open-input-string "+  abc-;"))
 (basic-printing-lexer in)
 
