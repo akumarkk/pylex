@@ -1,5 +1,4 @@
 #lang racket
-
 (require parser-tools/lex)
 (require (prefix-in : parser-tools/lex-sre))
 
@@ -10,44 +9,40 @@
   (file-position port (- (file-position port) 1)))
 
 ;count spaces:
-(define space-count 0)
-
-(define global-top 0)
-(define current-space 0)
-
-(define (inc-space!)
-  (set! space-count (+ space-count  1)))
+(define current-spaces 0)
 
 (define (reset-spaces!)
   (measure-spaces!)
-  (set! space-count 0))
+  (set! current-spaces 0))
+
+(define (inc-space!)
+  (set! current-spaces (+ current-spaces 1)))
+
+(define (inc-tab!) (error "implement me!"))
 
 ; Indent stack to hold indentation information
 
-
 (define indent-stack '())
 
-;(define current-indent (car indent-stack))
+(define (current-indent) current-spaces)
 
-(define (push-indent! spaces) 
-  (set! current-space spaces)
-  (set! indent-stack (cons spaces indent-stack))
+(define (push-indent! spaces)
+  ;(set! current-space spaces)
+  (set! indent-stack (cons current-spaces indent-stack))
   (display "INDENT"))
 
-(define (pop-indent!) 
-  (define top (car indent-stack))
-  (set! current-space (car indent-stack))
+(define (pop-indent!)
+  ;(define top (car indent-stack))
+  (set! current-spaces (car indent-stack))
   (set! indent-stack (cdr indent-stack)))
-  
+
 (define (handle-dedent!)
-  (pop-indent!) 
-  (if (= current-space space-count) (display "DEDENT") 
-      (if (> space-count current-space) (display "INDENTATION ERROR") (handle-dedent!))))
-       
-       
-       
-(define (measure-spaces!) 
-  (if (> space-count current-space) (push-indent! space-count) (void)))
+  (pop-indent!)
+  (if (= current-spaces current-indent) (display "DEDENT")
+      (if (> current-indent current-spaces) (display "INDENTATION ERROR") (handle-dedent!))))
+
+(define (measure-spaces!)
+  (if (> (current-indent) current-spaces) (push-indent! current-spaces) (void)))
 
 
 
@@ -59,24 +54,25 @@
 
 (define-lex-abbrev hash-comment ("#"))
 
-(define-lex-abbrev operator (:or "+"      "-"     "*"     "**"     "/"      "//"    "%" 
-                                "<<"     ">>"    "&"     "^"      "|"      "^"     "~"  
+(define-lex-abbrev operator (:or "+"      "-"     "*"     "**"     "/"      "//"    "%"
+                                "<<"     ">>"    "&"     "^"      "|"      "^"     "~"
+
                                 "<"      ">"     "<="    ">="     "=="     "!="))
 
-(define-lex-abbrev delimiter (:or "("     ")"     "["     "]"      "{"      "}" 
-                                 ","     ":"     "."     ";"      "@"      "="     "->" 
+(define-lex-abbrev delimiter (:or "("     ")"     "["     "]"      "{"      "}"
+                                 ","     ":"     "."     ";"      "@"      "="     "->"
                                  "+="    "-="    "*="    "/="     "//="    "%="
                                  "&="    "|="    "^="    ">>="    "<<="    "**="))
 
 (define-lex-abbrev string-quote (or "'''"       "\""""   "'"    "\"" ))
 
-(define-lex-abbrev keyword (:or "False"	   "None"    "True"    "and"	"as" 
-				"assert"   "break"   "class"   "continue"
-			        "def"      "del"     "elif"    "else"   "except"
-				"finally"  "for"     "from"    "global"	"if" 
-				"import"   "in"      "is"	"lamda" "nonlocal" 
-				"not"	   "or"      "pass" 	"raise" 
-				"return"   "try"     "while"    "with" "yield"))
+(define-lex-abbrev keyword (:or "False"    "None"    "True"    "and"    "as"
+                                "assert"   "break"   "class"   "continue"
+                                "def"      "del"     "elif"    "else"   "except"
+                                "finally"  "for"     "from"    "global" "if"
+                                "import"   "in"      "is"       "lamda" "nonlocal"
+                                "not"      "or"      "pass"     "raise"
+                                "return"   "try"     "while"    "with" "yield"))
 
 (define-lex-abbrev nonzerodigit (char-range #\1 #\9))
 (define-lex-abbrev digit (char-range #\0 #\9))
@@ -100,9 +96,26 @@
 
 (define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J")))
 
-(define basic-printing-lexer
-  (lexer 
-   
+(define indentation-lexer
+  (lexer
+   [#\space
+       ;=>
+       (begin
+                  (inc-space!)
+                  (display current-spaces)
+                  (newline)
+                  (indentation-lexer input-port)
+                  )]
+   [ any-char 
+    ;=>
+    (begin
+      (unget input-port)
+      (basic-printing-lexer input-port))
+    ]))
+  
+  (define basic-printing-lexer
+  (lexer
+
    [(:: operator)
     ; =>
     (begin (display "(PUNCT   ")
@@ -111,8 +124,8 @@
            (newline)
            (reset-spaces!)
            (basic-printing-lexer input-port))]
-   
-   
+
+
      [(:: keyword)
     ; =>
     (begin (display "(KEYWORD ")
@@ -122,17 +135,10 @@
            (reset-spaces!)
            (basic-printing-lexer input-port))]
      
-     [#\space
-       ;=>
-       (begin
-                  (inc-space!)
-                  (display space-count)
-                  (newline)
-                  (basic-printing-lexer input-port)
-                  )]
-    
-     
-     
+     [(:+ NEWLINE)
+      ;=>
+      (indentation-lexer input-port)]
+
      [(:: delimiter)
     ; =>
     (begin (display "(PUNCT ")
@@ -141,9 +147,9 @@
            (newline)
            (reset-spaces!)
            (basic-printing-lexer input-port))]
-   
-   
-   [(repetition 1 +inf.0 
+
+
+   [(repetition 1 +inf.0
                 (char-range #\a #\z))
     ; =>
     (begin (display "found an id: ")
@@ -151,18 +157,18 @@
            (newline)
            (reset-spaces!)
            (basic-printing-lexer input-port))]
-   
-   ;[(union #\space #\newline)
+
+   [#\space
     ; =>
-    ;(void)]
+    (basic-printing-lexer input-port)]
    ))
 
 (define (run-basic-printing-lexer port)
   (when (not (eq? 'eof (basic-printing-lexer port)))
     (run-basic-printing-lexer port)))
-
 (run-basic-printing-lexer (open-input-string "zoo"))
 
 (define in (open-input-string "+  a     bc          -;"))
 (basic-printing-lexer in)
+
 
