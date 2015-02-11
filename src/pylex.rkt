@@ -145,7 +145,7 @@
 
 (define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J")))
 
-(define prev-quote 0)
+
 (define quote-char 0)
 
 ; String literal lexer
@@ -158,7 +158,6 @@
            [(not (equal? lexeme quote-char)) 
             (begin 
               (display lexeme)
-              (set! prev-quote lexeme)
               (string-lexer input-port ))]
            
            [ (equal? quote-char lexeme) 
@@ -241,7 +240,7 @@
                 (char-range #\A #\Z))
                 )
     ; =>
-    (begin (display "found an id: ")
+    (begin (display "FOUND AN ID: ")
            (display lexeme)
            (newline)
            (basic-printing-lexer input-port))]
@@ -262,7 +261,7 @@
         university
      BANGALORE
      school
-\"Hello\" pqrs 'Hi'
+\"Hello\"         pqrs 'Hi'
  '''MNO'''"))
 (basic-printing-lexer in)
 
