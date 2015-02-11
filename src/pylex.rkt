@@ -27,15 +27,10 @@
 (define (current-indent)  (car indent-stack))
 
 (define (push-indent! spaces)
-  ;(set! current-space spaces)
-  (set! indent-stack (cons spaces indent-stack))
-  )
+  (set! indent-stack (cons spaces indent-stack)))
 
 (define (pop-indent!)
-  ;(define top (car indent-stack))
-  (set! indent-stack (cdr indent-stack))
-  ;(set! current-indent (car indent-stack))
-  )
+  (set! indent-stack (cdr indent-stack)))
 
 (define (handle-dedent!)
   (pop-indent!)
@@ -81,8 +76,7 @@
                )]
            )
      )]
-  )
-)
+  ))
   
 
 
