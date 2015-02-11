@@ -24,22 +24,23 @@
 
 (define indent-stack '())
 
-(define (current-indent) current-spaces)
+; current-indent points to top of the indent stack
+(define (current-indent)  (car indent-stack))
 
 (define (push-indent! spaces)
   ;(set! current-space spaces)
-  (set! indent-stack (cons current-spaces indent-stack))
+  (set! indent-stack (cons spaces indent-stack))
   (display "INDENT"))
 
 (define (pop-indent!)
   ;(define top (car indent-stack))
-  (set! current-spaces (car indent-stack))
-  (set! indent-stack (cdr indent-stack)))
+  (set! indent-stack (cdr indent-stack))
+  (set! current-indent (car indent-stack)))
 
 (define (handle-dedent!)
   (pop-indent!)
-  (if (= current-spaces current-indent) (display "DEDENT")
-      (if (> current-indent current-spaces) (display "INDENTATION ERROR") (handle-dedent!))))
+  (if (= current-spaces (current-indent)) (display "DEDENT")
+      (if (> (current-indent) current-spaces) (display "INDENTATION ERROR") (handle-dedent!))))
 
 (define (measure-spaces!)
   (if (> (current-indent) current-spaces) (push-indent! current-spaces) (void)))
@@ -109,6 +110,7 @@
    [ any-char 
     ;=>
     (begin
+      (measure-spaces!)
       (unget input-port)
       (basic-printing-lexer input-port))
     ]))
@@ -168,7 +170,10 @@
     (run-basic-printing-lexer port)))
 (run-basic-printing-lexer (open-input-string "zoo"))
 
-(define in (open-input-string "+  a     bc          -;"))
+(define in (open-input-string "+  a     bc          -
+     utah;
+        university 
+   school"))
 (basic-printing-lexer in)
 
 
