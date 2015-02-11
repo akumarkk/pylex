@@ -112,7 +112,7 @@
 ;String leteral definition
 (define-lex-abbrev stringliteral (:: stringprefix (or shortstring longstring)))
 (define-lex-abbrev stringprefix  (:or ""r"" ""u"" ""R"" ""U""))
-(define-lex-abbrev shortstring   (:or "'" shortstringitem* "'"  '"'shortstringitem'"'))
+(define-lex-abbrev shortstring   (:: (:or "'" '"') shortstringitem* (:or "'" '"')))
 (define-lex-abbrev longstring   (:or "'" longstringitem* "'"  '"'longstringitem'"'))
 (define-lex-abbrev shortstringitem (:or shortstringchar stringescapeseq))
 (define-lex-abbrev longstringitem (:or longstringchar stringescapeseq))
