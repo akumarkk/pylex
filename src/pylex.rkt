@@ -13,7 +13,6 @@
 (define current-spaces 0)
 
 (define (reset-spaces!)
-  (measure-spaces!)
   (set! current-spaces 0))
 
 (define (inc-space!)
@@ -31,7 +30,7 @@
 (define (push-indent! spaces)
   ;(set! current-space spaces)
   (set! indent-stack (cons spaces indent-stack))
-  (display "INDENT"))
+  )
 
 (define (pop-indent!)
   ;(define top (car indent-stack))
@@ -50,24 +49,37 @@
 ;         If it matches, emit DEDENT and break
 ;         Else if end of stack is reached, report error() and exit from this function.
 
-
+(define flag #t)
 
 (define (measure-spaces!)
+  (set! flag #t)
  
   (cond 
     [(equal? current-spaces current-indent) (void)]
     
-    [(> current-spaces (current-indent)) (push-indent! current-spaces) ]
+    [(> current-spaces (current-indent)) (begin 
+                                           (display "INDENT") 
+                                           (newline)
+                                           (push-indent! current-spaces)) ]
     
-    [(while (not (equal? current-indent 0))
-           (if (= current-indent current-spaces) 
-               (display "DEDENT")
-               ( (pop-indent!) 
-                 (if (and (not (equal? current-indent current-spaces)) (equal? current-indent 0))
-                   (display "INDENTATION ERROR")
+    [(while (and (not (equal? (current-indent) 0)) (equal? flag #t))
+           (cond 
+             [(= (current-indent) current-spaces)
+               (begin 
+                    (display "DEDENT")
+                    (newline)
+                    (set! flag #f))]
+               
+               [(begin 
+                 (pop-indent!) 
+                 (if (and (not (equal? (current-indent) current-spaces)) (equal? (current-indent) 0))
+                   (begin 
+                     (display "INDENTATION ERROR")
+                     (newline)
+                     )
                    (void)
                  )
-               )
+               )]
            )
      )]
   )
@@ -140,6 +152,7 @@
     ;=>
     (begin
       (measure-spaces!)
+      (reset-spaces!)
       (unget input-port)
       (basic-printing-lexer input-port))
     ]))
@@ -202,7 +215,8 @@
 
 (define in (open-input-string "+  a     bc          -
      utah;
-        university 
+        university
+     bangalore
    school"))
 (basic-printing-lexer in)
 
