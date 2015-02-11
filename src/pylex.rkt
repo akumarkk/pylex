@@ -1,6 +1,7 @@
 #lang racket
 (require parser-tools/lex)
 (require (prefix-in : parser-tools/lex-sre))
+(require (planet dyoo/while-loop))
 
 (define (output-endmarker? input-port)
   (equal?   input-port))
@@ -35,15 +36,43 @@
 (define (pop-indent!)
   ;(define top (car indent-stack))
   (set! indent-stack (cdr indent-stack))
-  (set! current-indent (car indent-stack)))
+  ;(set! current-indent (car indent-stack))
+  )
 
 (define (handle-dedent!)
   (pop-indent!)
   (if (= current-spaces (current-indent)) (display "DEDENT")
       (if (> (current-indent) current-spaces) (display "INDENTATION ERROR") (handle-dedent!))))
 
+;measure-sapce!() - decides whether to push current-space into stack or not
+; 1. Push only when current-space is greater than top of the stack
+; 2. Pop() each item from the stack and compare against current-spaces.
+;         If it matches, emit DEDENT and break
+;         Else if end of stack is reached, report error() and exit from this function.
+
+
+
 (define (measure-spaces!)
-  (if (> (current-indent) current-spaces) (push-indent! current-spaces) (void)))
+ 
+  (cond 
+    [(equal? current-spaces current-indent) (void)]
+    
+    [(> current-spaces (current-indent)) (push-indent! current-spaces) ]
+    
+    [(while (not (equal? current-indent 0))
+           (if (= current-indent current-spaces) 
+               (display "DEDENT")
+               ( (pop-indent!) 
+                 (if (and (not (equal? current-indent current-spaces)) (equal? current-indent 0))
+                   (display "INDENTATION ERROR")
+                   (void)
+                 )
+               )
+           )
+     )]
+  )
+)
+  
 
 
 
@@ -124,7 +153,7 @@
            (display lexeme)
            (display ")")
            (newline)
-           (reset-spaces!)
+           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
 
 
@@ -134,7 +163,7 @@
            (display lexeme)
            (display ")")
            (newline)
-           (reset-spaces!)
+           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
      
      [(:+ NEWLINE)
@@ -147,7 +176,7 @@
            (display lexeme)
            (display ")")
            (newline)
-           (reset-spaces!)
+           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
 
 
@@ -157,7 +186,7 @@
     (begin (display "found an id: ")
            (display lexeme)
            (newline)
-           (reset-spaces!)
+           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
 
    [#\space
@@ -166,6 +195,7 @@
    ))
 
 (define (run-basic-printing-lexer port)
+  (push-indent! current-spaces)
   (when (not (eq? 'eof (basic-printing-lexer port)))
     (run-basic-printing-lexer port)))
 (run-basic-printing-lexer (open-input-string "zoo"))
