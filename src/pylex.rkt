@@ -21,7 +21,6 @@
 (define (inc-tab!) (error "implement me!"))
 
 ; Indent stack to hold indentation information
-
 (define indent-stack '())
 
 ; current-indent points to top of the indent stack
@@ -58,7 +57,7 @@
     [(equal? current-spaces current-indent) (void)]
     
     [(> current-spaces (current-indent)) (begin 
-                                           (display "INDENT") 
+                                           (display "(INDENT)") 
                                            (newline)
                                            (push-indent! current-spaces)) ]
     
@@ -66,7 +65,7 @@
            (cond 
              [(= (current-indent) current-spaces)
                (begin 
-                    (display "DEDENT")
+                    (display "(DEDENT)")
                     (newline)
                     (set! flag #f))]
                
@@ -166,7 +165,6 @@
            (display lexeme)
            (display ")")
            (newline)
-           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
 
 
@@ -176,7 +174,6 @@
            (display lexeme)
            (display ")")
            (newline)
-           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
      
      [(:+ NEWLINE)
@@ -189,17 +186,18 @@
            (display lexeme)
            (display ")")
            (newline)
-           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
 
 
    [(repetition 1 +inf.0
-                (char-range #\a #\z))
+                (:or
+                (char-range #\a #\z)
+                (char-range #\A #\Z))
+                )
     ; =>
     (begin (display "found an id: ")
            (display lexeme)
            (newline)
-           ;(reset-spaces!)
            (basic-printing-lexer input-port))]
 
    [#\space
@@ -216,7 +214,7 @@
 (define in (open-input-string "+  a     bc          -
      utah;
         university
-     bangalore
+     BANGALORE
    school"))
 (basic-printing-lexer in)
 
