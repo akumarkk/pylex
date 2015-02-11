@@ -145,17 +145,27 @@
 
 (define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J")))
 
+(define prev-quote 0)
+(define quote-char 0)
 
-
+; String literal lexer
 (define string-lexer
   (lexer
    [ (:+ string-quote) 
        ;=>
        (begin
-         (display "End of String")
-         (newline)
-         (basic-printing-lexer input-port)
-         )]
+         (cond
+           [(not (equal? lexeme quote-char)) 
+            (begin 
+              (display lexeme)
+              (set! prev-quote lexeme)
+              (string-lexer input-port ))]
+           
+           [ (equal? quote-char lexeme) 
+             (begin
+               (display ")")
+               (newline)
+               (basic-printing-lexer input-port ))]))]
    
    [any-char 
     ;=>
@@ -191,7 +201,8 @@
         ;=>
         (begin
           (display "(LIT ")
-          (string-lexer input-port))]
+          (set! quote-char lexeme)
+          (string-lexer input-port ))]
          
 
    [(:: operator)
@@ -250,8 +261,9 @@
      utah;
         university
      BANGALORE
-   school
-'Hello' Hi"))
+     school
+\"Hello\" pqrs 'Hi'
+ '''MNO'''"))
 (basic-printing-lexer in)
 
 
