@@ -99,7 +99,7 @@
                                  "+="    "-="    "*="    "/="     "//="    "%="
                                  "&="    "|="    "^="    ">>="    "<<="    "**="))
 
-(define-lex-abbrev string-quote (or "'''"       "\""""   "'"    "\"" ))
+(define-lex-abbrev string-quote (:or "'''"       "\""""   "'"    "\"" ))
 
 (define-lex-abbrev keyword (:or "False"    "None"    "True"    "and"    "as"
                                 "assert"   "break"   "class"   "continue"
@@ -112,8 +112,8 @@
 ;String leteral definition
 (define-lex-abbrev stringliteral (:: stringprefix (or shortstring longstring)))
 (define-lex-abbrev stringprefix  (:or ""r"" ""u"" ""R"" ""U""))
-(define-lex-abbrev shortstring   (:: (:or "'" '"') shortstringitem* (:or "'" '"')))
-(define-lex-abbrev longstring   (:or "'" longstringitem* "'"  '"'longstringitem'"'))
+;(define-lex-abbrev shortstring   (:: (:or "'" '"') shortstringitem* (:or "'" '"')))
+;(define-lex-abbrev longstring   (:or "'" longstringitem* "'"  '"'longstringitem'"'))
 (define-lex-abbrev shortstringitem (:or shortstringchar stringescapeseq))
 (define-lex-abbrev longstringitem (:or longstringchar stringescapeseq))
 (define-lex-abbrev shortstringchar ())
@@ -145,6 +145,26 @@
 
 (define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J")))
 
+
+
+(define string-lexer
+  (lexer
+   [ (:+ string-quote) 
+       ;=>
+       (begin
+         (display "End of String")
+         (newline)
+         (basic-printing-lexer input-port)
+         )]
+   
+   [any-char 
+    ;=>
+    (begin
+      (display lexeme)
+      (string-lexer input-port))]))
+      
+   
+   
 (define indentation-lexer
   (lexer
    [#\space
@@ -166,6 +186,13 @@
   
   (define basic-printing-lexer
   (lexer
+   
+   [(:+ string-quote)
+        ;=>
+        (begin
+          (display "(LIT ")
+          (string-lexer input-port))]
+         
 
    [(:: operator)
     ; =>
@@ -223,7 +250,8 @@
      utah;
         university
      BANGALORE
-   school"))
+   school
+'Hello' Hi"))
 (basic-printing-lexer in)
 
 
