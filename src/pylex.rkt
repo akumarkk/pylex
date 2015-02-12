@@ -30,7 +30,7 @@
           [{"(" ")"} (void)]
           [{"[" "]"} (void)]
           [{"{" "}"} (void)]
-          [{_     _} (error "mismatched parens")]))
+          [{_     _} (display "mismatched parens")]))
 
 ; Indent stack to hold indentation information
 (define indent-stack '())
@@ -159,6 +159,7 @@
 
 
 (define quote-char 0)
+(define raw-string-flag 0)
 
 ; String literal lexer
 (define string-lexer
@@ -227,7 +228,17 @@
         (begin
           (display "(LIT ")
           (set! quote-char lexeme)
-          (string-lexer input-port ))]
+          (set! raw-string-flag 0)
+          (string-lexer input-port))]
+   
+   [(:or (:: #\r string-quote) (:: #\R string-quote))
+    ;=>
+    (begin 
+      (display "(LIT ")
+      (set! quote-char (substring lexeme 1))
+      (set! raw-string-flag 1)
+      (string-lexer input-port ))]
+    
          
 
    [(:: operator)
@@ -290,7 +301,7 @@
 \"Hello\"         (pqrs} 'Hi'
 ide
  '''MNO'''
-        another id"))
+        another id r\"test\n\" Computing"))
 (basic-printing-lexer in)
 
 
