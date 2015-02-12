@@ -218,9 +218,7 @@
    [(:or #\) #\} #\])
         ;=>
         (begin
-          
           (pop-paren! lexeme)
-          
           (basic-printing-lexer input-port))]
    
    [(:+ string-quote)
