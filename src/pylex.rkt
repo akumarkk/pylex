@@ -18,7 +18,19 @@
 (define (inc-space!)
   (set! current-spaces (+ current-spaces 1)))
 
-(define (inc-tab!) (error "implement me!"))
+(define paren-stack '())
+
+(define (push-paren! char)
+        (set! paren-stack (cons char paren-stack)))
+
+(define (pop-paren! char)
+        (define top (car paren-stack))
+        (set! paren-stack (cdr paren-stack))
+        (match* {top char}
+          [{"(" ")"} (void)]
+          [{"[" "]"} (void)]
+          [{"{" "}"} (void)]
+          [{_     _} (error "mismatched parens")]))
 
 ; Indent stack to hold indentation information
 (define indent-stack '())
@@ -196,6 +208,20 @@
   (define basic-printing-lexer
   (lexer
    
+   [(:or #\( #\{ #\[)
+        ;=>
+        (begin
+          (push-paren! lexeme)
+          (basic-printing-lexer input-port))]
+   
+   [(:or #\) #\} #\])
+        ;=>
+        (begin
+          
+          (pop-paren! lexeme)
+          
+          (basic-printing-lexer input-port))]
+   
    [(:+ string-quote)
         ;=>
         (begin
@@ -261,7 +287,7 @@
         university
      BANGALORE
      school
-\"Hello\"         pqrs 'Hi'
+\"Hello\"         (pqrs} 'Hi'
 ide
  '''MNO'''
         another id"))
