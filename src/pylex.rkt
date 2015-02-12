@@ -156,6 +156,7 @@
 
 (define quote-char 0)
 (define raw-string-flag 0)
+(define escape-char "\\")
 
 ; String literal lexer
 (define string-lexer
@@ -166,6 +167,8 @@
          (cond
            [(not (equal? lexeme quote-char)) 
             (begin 
+              (if (equal? lexeme escape-char) (begin 
+                                                (string-append lexeme escape-char)) (void))
               (display lexeme)
               (string-lexer input-port ))]
            
@@ -178,6 +181,8 @@
    [any-char 
     ;=>
     (begin
+      (if (equal? lexeme escape-char) (begin
+                                        (string-append lexeme escape-char)) (void))
       (display lexeme)
       (string-lexer input-port))]))
       
@@ -295,7 +300,7 @@
 \"Hello\"         (pqrs} 'Hi'
 ide
  '''MNO'''
-        another id r\"test\n\" Computing"))
+        another id r\"testing\\n\" Computing"))
 (basic-printing-lexer in)
 
 
