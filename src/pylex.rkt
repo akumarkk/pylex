@@ -167,8 +167,10 @@
          (cond
            [(not (equal? lexeme quote-char)) 
             (begin 
-              (if (equal? lexeme escape-char) (begin 
-                                                (string-append lexeme escape-char)) (void))
+              (if (and (equal? lexeme escape-char) (equal? raw-string-flag 1)) 
+                  (begin 
+                    (string-append lexeme escape-char)) 
+                  (void))
               (display lexeme)
               (string-lexer input-port ))]
            
@@ -181,8 +183,10 @@
    [any-char 
     ;=>
     (begin
-      (if (equal? lexeme escape-char) (begin
-                                        (string-append lexeme escape-char)) (void))
+      (if (and (equal? lexeme escape-char) (equal? raw-string-flag 1))
+          (begin
+            (string-append lexeme escape-char)) 
+          (void))
       (display lexeme)
       (string-lexer input-port))]))
       
@@ -194,8 +198,8 @@
        ;=>
        (begin
                   (inc-space!)
-                  (display current-spaces)
-                  (newline)
+                  ;(display current-spaces)
+                  ;(newline)
                   (indentation-lexer input-port)
                   )]
    [ any-char 
@@ -300,7 +304,7 @@
 \"Hello\"         (pqrs} 'Hi'
 ide
  '''MNO'''
-        another id r\"testing\\n\" Computing"))
+        another id r\"testing\\n \u2660\"   Computing"))
 (basic-printing-lexer in)
 
 
