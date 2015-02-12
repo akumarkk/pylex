@@ -262,7 +262,9 @@
      BANGALORE
      school
 \"Hello\"         pqrs 'Hi'
- '''MNO'''"))
+ide
+ '''MNO'''
+        another id"))
 (basic-printing-lexer in)
 
 
