@@ -319,7 +319,19 @@
           (set! raw-string-flag 0)
           (string-lexer input-port))]
    
-   [(:or (:: #\r string-quote) (:: #\R string-quote))
+   ; Treat normally. u or U has no special meaning in Python3 where as in
+   ; Python2 it was required to interpret unicode characters. Otherwise string
+   ; is treated as raw string in python
+   [(:or (:: #\u string-quote)   (:: #\U string-quote) 
+         (:: #\b string-quote)   (:: #\B string-quote))
+    ;=>
+    (begin 
+      (display "(LIT ")
+      (set! quote-char (substring lexeme 1))
+      (set! raw-string-flag 0)
+      (string-lexer input-port ))]
+   
+   [(:or (:: #\r string-quote)   (:: #\R string-quote))
     ;=>
     (begin 
       (display "(LIT ")
@@ -327,7 +339,19 @@
       (set! raw-string-flag 1)
       (string-lexer input-port ))]
     
-         
+     
+   [(:or (:: "br" string-quote)  (:: "Br" string-quote)   (:: "BR" string-quote) 
+         (:: "rb" string-quote)  (:: "rB" string-quote)   (:: "Rb" string-quote)
+         (:: "Rb" string-quote))
+    ;=>
+    (begin 
+      (display "(LIT ")
+      ;lexeme will always holds matched string/pattern. In this case any of rB and quote.
+      ;So we need to store only quote not the prefixstring in quote-char.
+      ; This can be achieved by taking substring
+      (set! quote-char (substring lexeme 2))
+      (set! raw-string-flag 1)
+      (string-lexer input-port ))]
 
    [(:: operator)
     ; =>
