@@ -368,7 +368,20 @@
       (unget input-port)
       (basic-printing-lexer input-port))
     ]))
-  
+
+;comment lexer
+(define comment-lexer
+  (lexer
+   
+   [any-char
+    ;=>
+    (comment-lexer input-port)]
+   
+   [NEWLINE
+    ;=>
+    (basic-printing-lexer input-port)]))
+
+;main lexer
   (define basic-printing-lexer
   (lexer
    
@@ -441,6 +454,9 @@
       (emit-punct lexeme)
       (basic-printing-lexer input-port))]
 
+   ["#" 
+    ;=>
+    (comment-lexer input-port)
 
      [(:: keyword #\space)
     ; =>
