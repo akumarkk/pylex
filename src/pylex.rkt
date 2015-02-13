@@ -58,7 +58,7 @@
 ;unicode-get() : Reads UnicodeData.txt to map the unicode name to actual unicode 
 ;TODO : Return error message if the unicode is not present UnicodeData.txt file
 
-(define unicode-data (open-input-file "UnicodeData.txt"))
+(define unicode-data (open-input-file "./UnicodeData.txt"))
 (define line 0)
 (define parsed-line 0)
 (define uname "")
