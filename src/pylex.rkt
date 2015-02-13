@@ -128,7 +128,7 @@
 ;  (set! indent-top  (car indent-stack)))
 
 
-(define-lex-abbrev NEWLINE (:or "#\newline" "\n"))
+(define-lex-abbrev NEWLINE (:or "#\newline" "\n" "\r" "\r\n"))
 
 (define-lex-abbrev hash-comment ("#"))
 
@@ -451,6 +451,11 @@
       (display ")")
       (newline)
       (basic-printing-lexer input-port))]
+     
+     ;explicit line joining
+     [(:: "\\" NEWLINE)
+      ;=>
+      (basic-printing-lexer input-port)]
      
      [(:+ NEWLINE)
       ;=>
