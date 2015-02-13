@@ -5,4 +5,5 @@ clean:
 	`which rm` pylex
 
 test:
+	raco exe pylex.rkt
 	./pylex test.py
