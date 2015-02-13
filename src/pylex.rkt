@@ -194,19 +194,6 @@
                                 "not"      "or"      "pass"     "raise"
                                 "return"   "try"     "while"    "with" "yield"))
 
-;String leteral definition
-(define-lex-abbrev stringliteral (:: stringprefix (or shortstring longstring)))
-(define-lex-abbrev stringprefix  (:or ""r"" ""u"" ""R"" ""U""))
-;(define-lex-abbrev shortstring   (:: (:or "'" '"') shortstringitem* (:or "'" '"')))
-;(define-lex-abbrev longstring   (:or "'" longstringitem* "'"  '"'longstringitem'"'))
-(define-lex-abbrev shortstringitem (:or shortstringchar stringescapeseq))
-(define-lex-abbrev longstringitem (:or longstringchar stringescapeseq))
-(define-lex-abbrev shortstringchar ())
-(define-lex-abbrev longstringchar ())
-(define-lex-abbrev stringescapeseq ())
-
-
-
 
 (define-lex-abbrev nonzerodigit (char-range #\1 #\9))
 (define-lex-abbrev digit (char-range #\0 #\9))
