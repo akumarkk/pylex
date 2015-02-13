@@ -269,6 +269,7 @@
                                                    
                           ))
 
+;To display punct lexemes
 (define (emit-punct str)
   (begin
     (display "(PUNCT \"")
@@ -276,6 +277,7 @@
     (display "\")")
     (newline)))
 
+;String-lexer
 (define string-lexer
   (lexer
    [ (:+ string-quote) 
@@ -440,7 +442,7 @@
       (basic-printing-lexer input-port))]
 
 
-     [(:: keyword)
+     [(:: keyword #\space)
     ; =>
     (begin 
       (emit-id)
