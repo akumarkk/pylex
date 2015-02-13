@@ -3,7 +3,7 @@
         university
      BANGALORE
      school
-\"Hello\"         (pqrs} 'Hi'
+Hello         (pqrs) 'Hi'
 ide
  '''MNO'''
         another id

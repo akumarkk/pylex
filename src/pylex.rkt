@@ -359,15 +359,7 @@
     (run-basic-printing-lexer port)))
 (run-basic-printing-lexer (open-input-string "zoo"))
 
-(define in (open-input-string "+  a     bc          -
-     utah;
-        university
-     BANGALORE
-     school
-\"Hello\"         (pqrs} 'Hi'
-ide
- '''MNO'''
-        another id r\"testing\\n \u2660\"   \\N{PERCENT SIGN} Computing"))
+(define in (open-input-file "test.py"))
 (basic-printing-lexer in)
 
 
