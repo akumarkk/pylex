@@ -55,7 +55,7 @@
 ;unicode-get() : Reads UnicodeData.txt to map the unicode name to actual unicode 
 ;TODO : Return error message if the unicode is not present UnicodeData.txt file
 
-(define unicode-data (open-input-file "/Users/akumarkk/Desktop/Compilers/pylex/src/UnicodeData.txt"))
+(define unicode-data (open-input-file "UnicodeData.txt"))
 (define line 0)
 (define parsed-line 0)
 (define uname "")
@@ -205,6 +205,42 @@
 (define parsed-unicode-name "")
 (define app-string "")
 
+(define other-id-start-chars '(#\_ #\u2118 #\u212E #\u309B #\u309C ))
+(define other-id-continue-chars '(#\u00B7 #\u0387 #\u1369 #\u1370 #\u1371 #\u19DA))
+(define (other-id-start? char) (not (false? (member char other-id-start-chars))))
+(define (other-id-continue? char) (not (false? (member char other-id-continue-chars))))
+(define (id-start? char) (or (not (false? (member (char-general-category char) '(lu ll lt lm lo nl))))
+                             (other-id-start? char)))
+(define (id-continue? char) (or (id-start? char)
+                                (not (false? (member (char-general-category char) '(mn mc nd pc))))
+                                (other-id-continue? char)))
+(define (xid-start? char) (and (id-start? char)
+                               (id-start? (string-ref (string-normalize-nfkc (string char)) 0))
+                               (andmap xid-continue? (string->list (string-normalize-nfkc (string char))))))
+                       
+(define (xid-continue? char) (and (id-continue? char)
+                                  (id-continue? (car (string->list (string-normalize-nfkc (string char)))))))
+;to store the identifier string
+(define id-string "")
+
+;flag to check if first char of indentifier
+(define first-char 0)
+(define (id-lexer port) (cond
+                          [(and (xid-start? (read-char port)) (equal? first-char 0))
+                           (begin
+                             (set! id-string (string-append id-string (string (read-char port))))
+                             (set! first-char 1))]
+                          
+                          [(xid-continue? (read-char port)) (set! id-string (string-append id-string (string (read-char port))))]
+
+                          [ (and (> (string-length id-string) 0) (xid-start? (string-ref id-string 0)))
+                                   (begin
+                                     (display "(ID \"")
+                                     (display id-string)
+                                     (display "\"")
+                                     (display newline)
+                                     (set! first-char 0)
+                                     (set! id-string ""))]))
 (define string-lexer
   (lexer
    [ (:+ string-quote) 
@@ -383,20 +419,26 @@
            (basic-printing-lexer input-port))]
 
 
-   [(repetition 1 +inf.0
-                (:or
-                (char-range #\a #\z)
-                (char-range #\A #\Z))
-                )
+   ;[(repetition 1 +inf.0
+    ;            (:or
+     ;           (char-range #\a #\z)
+      ;          (char-range #\A #\Z))
+       ;         )
     ; =>
-    (begin (display "FOUND AN ID: ")
-           (display lexeme)
-           (newline)
-           (basic-printing-lexer input-port))]
+    ;(begin (display "FOUND AN ID: ")
+     ;      (display lexeme)
+      ;     (newline)
+       ;    (basic-printing-lexer input-port))]
 
    [#\space
     ; =>
     (basic-printing-lexer input-port)]
+   
+   [any-char
+    ;=>
+    (begin
+      (id-lexer input-port)
+      (basic-printing-lexer input-port))]
    ))
 
 (define (run-basic-printing-lexer port)
