@@ -52,11 +52,6 @@
 (define (pop-indent!)
   (set! indent-stack (cdr indent-stack)))
 
-(define (handle-dedent!)
-  (pop-indent!)
-  (if (= current-spaces (current-indent)) (display "DEDENT")
-      (if (> (current-indent) current-spaces) (display "INDENTATION ERROR") (handle-dedent!))))
-
 
 
 
