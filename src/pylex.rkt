@@ -384,7 +384,8 @@
     ;=>
     (begin
       (print-remaining-dedents)
-      (display "(ENDMARKER)"))]
+      (display "(ENDMARKER)")
+      (newline))]
    
    [ any-char 
     ;=>
