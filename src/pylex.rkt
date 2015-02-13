@@ -315,7 +315,7 @@
            
            [ (equal? quote-char lexeme) 
              (begin
-               (display ")")
+               (display "\")")
                (newline)
                (basic-printing-lexer input-port ))]))]
    
@@ -412,7 +412,7 @@
         ;=>
         (begin
           (emit-id)
-          (display "(LIT ")
+          (display "(LIT \"")
           (set! quote-char lexeme)
           (set! raw-string-flag 0)
           (string-lexer input-port))]
@@ -447,9 +447,9 @@
            (basic-printing-lexer input-port))]
         
         [(begin
-           (display "(LIT ")
+           (display "(LIT \"")
            (display lexeme)
-           (display ")")
+           (display "\")")
            (newline)
            (basic-printing-lexer input-port ))]))]
 
@@ -461,7 +461,7 @@
     ;=>
     (begin 
       (emit-id)
-      (display "(LIT ")
+      (display "(LIT \"")
       (display "matched#")
       (display lexeme)
       (newline)
@@ -473,7 +473,7 @@
     ;=>
     (begin 
       (emit-id)
-      (display "(LIT ")
+      (display "(LIT \"")
       (set! quote-char (substring lexeme 1))
       (set! raw-string-flag 1)
       (string-lexer input-port ))]
@@ -483,7 +483,7 @@
     ;=>
     (begin 
       (emit-id)
-      (display "(LIT ")
+      (display "(LIT \"")
       ;lexeme will always holds matched string/pattern. In this case any of rB and quote.
       ;So we need to store only quote not the prefixstring in quote-char.
       ; This can be achieved by taking substring
