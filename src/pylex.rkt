@@ -94,9 +94,13 @@
 
 (define (measure-spaces!)
   (set! flag #t)
- 
+  ;(display "CURRENT SPACES#")
+  ;(display current-spaces)
+  ;(display "TOP OF STACK#")
+  ;(display (current-indent))
+  ;(newline)
   (cond 
-    [(equal? current-spaces current-indent) (void)]
+    [(equal? current-spaces (current-indent)) (void)]
     
     [(> current-spaces (current-indent)) (begin 
                                            (display "(INDENT)") 
@@ -120,6 +124,22 @@
                      )
                    (void)
                  ))]))]))
+  
+  ;{(if (and (equal? flag #t)    
+  ;         (equal? (current-indent) 0)      
+  ;        (equal? (current-indent) current-spaces))
+  ;    (begin
+  ;      (display "(DEDENT)")
+  ;      (newline)
+  ;      (set! flag #f))
+  ;    (void)))
+        
+(define (print-remaining-dedents)
+         (while (not (equal? (current-indent) 0))
+                (begin
+                  (display "(DEDENT)")
+                  (newline)
+                  (pop-indent!))))
   
 
 
@@ -360,6 +380,10 @@
                   ;(newline)
                   (indentation-lexer input-port)
                   )]
+   [(eof)
+    ;=>
+    (print-remaining-dedents)]
+   
    [ any-char 
     ;=>
     (begin
