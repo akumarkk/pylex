@@ -448,6 +448,8 @@
       ;=>
       (begin
        (emit-id)
+       (display "(NEWLINE)")
+       (newline)
        (indentation-lexer input-port))]
 
      [(:+ delimiter)
