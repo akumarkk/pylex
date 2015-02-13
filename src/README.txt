@@ -14,6 +14,9 @@
     - operators
     - Paranthesis
     - Indentation
+    
+    Few things that have to be implemented:
+    - Reading input from file "test.py" instead of stdin
 
 3. Files turned in
     a) UnicodeData.txt	: File contaning unicode data
