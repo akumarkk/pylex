@@ -404,7 +404,7 @@
     ;=>
     (comment-lexer input-port)]
    
-   [NEWLINE
+   [(:+ NEWLINE)
     ;=>
     (basic-printing-lexer input-port)]))
 
