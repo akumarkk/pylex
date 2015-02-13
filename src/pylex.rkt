@@ -195,17 +195,17 @@
 (define-lex-abbrev octinteger (:: #\0 (:or #\o #\O) (:+ octdigit)))
 (define-lex-abbrev hexinteger (:: #\0 (:or #\x #\X) (:+ hexdigit)))
 (define-lex-abbrev bininteger (:: #\0 (:or #\b #\B) (:+ bindigit)))
-(define-lex-abbrev decimalinteger (:or (:: nonzerodigit (:*digit)) (:+ #\0)))
+(define-lex-abbrev decimalinteger (:or (:: nonzerodigit (:* digit)) (:+ #\0)))
 (define-lex-abbrev intpart (:+ digit))
 (define-lex-abbrev fraction (:: "." (:+ digit)))
 (define-lex-abbrev pointfloat (:or (:: (:? intpart) fraction) (:: intpart ".")))
 (define-lex-abbrev exponent (:: (:or "e" "E") (:? (:or "+" "-")) (:+ digit)))
 
-(define-lex-abbrev exponentfloat (:: (or intpart floatpart) exponent))
+(define-lex-abbrev exponentfloat (:: (:or intpart pointfloat) exponent))
 
-(define-lex-abbrev floatnumber (or pointfloat exponentfloat))
+(define-lex-abbrev floatnumber (:or pointfloat exponentfloat))
 
-(define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J")))
+(define-lex-abbrev imagnumber (:: (:or floatnumber intpart) (:or "j" "J")))
 
 
                      
@@ -359,8 +359,10 @@
       (unget input-port)
       (basic-printing-lexer input-port))
     ]))
-  
-  (define basic-printing-lexer
+
+
+; This is the main lexer. It handles all kinds of python constructs  
+(define basic-printing-lexer
   (lexer
    
    [(:+ string-quote)
@@ -386,6 +388,27 @@
           (pop-paren! lexeme)
           (basic-printing-lexer input-port))]
    
+   [(:or decimalinteger hexinteger octinteger bininteger floatnumber imagnumber) 
+    ;=>
+    (begin 
+      (cond
+        
+        ; When Identifier name contains numerical literals, id-lexer has to be 
+        ;   invoked to handle that. Else numeric part of identifier will be 
+        ;   treated as integer literal
+        [(> first-char 0) 
+         (begin
+           (id-lexer (string-ref lexeme 0) input-port)
+           (basic-printing-lexer input-port))]
+        
+        [(begin
+           (display "(LIT ")
+           (display lexeme)
+           (display ")")
+           (newline)
+           (basic-printing-lexer input-port ))]))]
+
+
    ; Treat normally. u or U has no special meaning in Python3 where as in
    ; Python2 it was required to interpret unicode characters. Otherwise string
    ; is treated as raw string in python
