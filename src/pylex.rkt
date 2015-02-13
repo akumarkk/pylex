@@ -163,7 +163,7 @@
 (define-lex-abbrev unicode-quote-start (::    "\\"     "N"    "{"))
 (define-lex-abbrev unicode-quote-end (:: "}"))
 
-(define-lex-abbrev keyword (:or "False"    "None"    "True"    "and"    "as"
+(define-lex-abbrev keyword (:or "Falsespa"    "None"    "True"    "and"    "as"
                                 "assert"   "break"   "class"   "continue"
                                 "def"      "del"     "elif"    "else"   "except"
                                 "finally"  "for"     "from"    "global" "if"
@@ -246,27 +246,19 @@
                        (cond
                           [(and (xid-start? id-char) (equal? first-char 0))
                            (begin
-                             (display "Processing#")
-                             (display id-char)
-                             (newline)
                              (set! id-string (string-append id-string (string id-char)))
-                             (display id-string)
                              (set! first-char 1))]
                           
                           [(xid-continue? id-char) 
                            (begin
-                             (display "id-string#")
-                             (display id-string)
-                             (set! id-string (string-append id-string (string id-char)))
-                             (display "xid-continue#")
-                             (display id-string))]
+                             (set! id-string (string-append id-string (string id-char))))]
 
                           [ (and (> (string-length id-string) 0) (xid-start? (string-ref id-string 0)))
                                    (begin
                                      (display "(ID \"")
                                      (display id-string)
-                                     (display "\"")
-                                     (display newline)
+                                     (display "\")")
+                                     (newline)
                                      (set! first-char 0)
                                      (set! id-string ""))]))
 (define string-lexer
@@ -363,7 +355,21 @@
   (define basic-printing-lexer
   (lexer
    
-   [(:or #\( #\{ #\[)
+   [(:+ string-quote)
+        ;=>
+        (begin
+          (display "(LIT ")
+          (set! quote-char lexeme)
+          (set! raw-string-flag 0)
+          (string-lexer input-port))]
+   
+    [any-char
+    ;=>
+    (begin
+      (id-lexer (string-ref lexeme 0))
+      (basic-printing-lexer input-port))]
+      
+      [(:or #\( #\{ #\[)
         ;=>
         (begin
           (push-paren! lexeme)
@@ -374,14 +380,6 @@
         (begin
           (pop-paren! lexeme)
           (basic-printing-lexer input-port))]
-   
-   [(:+ string-quote)
-        ;=>
-        (begin
-          (display "(LIT ")
-          (set! quote-char lexeme)
-          (set! raw-string-flag 0)
-          (string-lexer input-port))]
    
    ; Treat normally. u or U has no special meaning in Python3 where as in
    ; Python2 it was required to interpret unicode characters. Otherwise string
@@ -458,18 +456,10 @@
       ;     (newline)
        ;    (basic-printing-lexer input-port))]
 
-   [#\space
+   ;[#\space
     ; =>
-    (basic-printing-lexer input-port)]
-   
-   [any-char
-    ;=>
-    (begin
-      (display "Invoking id-lexer#")
-      (display (string-ref lexeme 0))
-      (newline)
-      (id-lexer (string-ref lexeme 0))
-      (basic-printing-lexer input-port))]
+    ;(basic-printing-lexer input-port)]
+  
    ))
 
 (define (run-basic-printing-lexer port)
