@@ -242,18 +242,10 @@
 
 ;flag to check if first char of indentifier
 (define first-char 0)
-(define (id-lexer id-char) 
-                       (cond
-                          [(and (xid-start? id-char) (equal? first-char 0))
-                           (begin
-                             (set! id-string (string-append id-string (string id-char)))
-                             (set! first-char 1))]
-                          
-                          [(xid-continue? id-char) 
-                           (begin
-                             (set! id-string (string-append id-string (string id-char))))]
 
-                          [ (and (> (string-length id-string) 0) (xid-start? (string-ref id-string 0)))
+;display identifier
+(define (emit-id) (cond 
+                    [(and (> (string-length id-string) 0) (xid-start? (string-ref id-string 0)))
                                    (begin
                                      (display "(ID \"")
                                      (display id-string)
@@ -261,6 +253,22 @@
                                      (newline)
                                      (set! first-char 0)
                                      (set! id-string ""))]))
+                   
+(define (id-lexer id-char port) 
+                       (cond
+                          [(and (xid-start? id-char) (equal? first-char 0))
+                           (begin
+                             (set! id-string (string-append id-string (string id-char)))
+                             (set! first-char 1)
+                             )]
+                          
+                          [(xid-continue? id-char) 
+                           (begin
+                             (set! id-string (string-append id-string (string id-char)))
+                             )]
+                                                   
+                          ))
+
 (define string-lexer
   (lexer
    [ (:+ string-quote) 
@@ -358,26 +366,23 @@
    [(:+ string-quote)
         ;=>
         (begin
+          (emit-id)
           (display "(LIT ")
           (set! quote-char lexeme)
           (set! raw-string-flag 0)
           (string-lexer input-port))]
-   
-    [any-char
-    ;=>
-    (begin
-      (id-lexer (string-ref lexeme 0))
-      (basic-printing-lexer input-port))]
       
-      [(:or #\( #\{ #\[)
+   [(:or #\( #\{ #\[)
         ;=>
         (begin
+          (emit-id)
           (push-paren! lexeme)
           (basic-printing-lexer input-port))]
    
    [(:or #\) #\} #\])
         ;=>
         (begin
+          (emit-id)
           (pop-paren! lexeme)
           (basic-printing-lexer input-port))]
    
@@ -387,6 +392,7 @@
    [(:+ one-string-quote)
     ;=>
     (begin 
+      (emit-id)
       (display "(LIT ")
       (display "matched#")
       (display lexeme)
@@ -398,6 +404,7 @@
    [(:+ raw1-string-quote) 
     ;=>
     (begin 
+      (emit-id)
       (display "(LIT ")
       (set! quote-char (substring lexeme 1))
       (set! raw-string-flag 1)
@@ -407,6 +414,7 @@
    [(:+ raw2-string-quote)
     ;=>
     (begin 
+      (emit-id)
       (display "(LIT ")
       ;lexeme will always holds matched string/pattern. In this case any of rB and quote.
       ;So we need to store only quote not the prefixstring in quote-char.
@@ -415,35 +423,54 @@
       (set! raw-string-flag 1)
       (string-lexer input-port ))]
 
-   [(:: operator)
+   [(:+ operator)
     ; =>
-    (begin (display "(PUNCT   ")
-           (display lexeme)
-           (display ")")
-           (newline)
-           (basic-printing-lexer input-port))]
+    (begin 
+      (emit-id)
+      (display "(PUNCT ")
+      (display lexeme)
+      (display ")")
+      (newline)
+      (basic-printing-lexer input-port))]
 
 
-     [(:: keyword)
+     [(:+ keyword)
     ; =>
-    (begin (display "(KEYWORD ")
-           (display lexeme)
-           (display ")")
-           (newline)
-           (basic-printing-lexer input-port))]
+    (begin 
+      (emit-id)
+      (display "(KEYWORD ")
+      (display lexeme)
+      (display ")")
+      (newline)
+      (basic-printing-lexer input-port))]
      
      [(:+ NEWLINE)
       ;=>
-      (indentation-lexer input-port)]
+      (begin
+       (emit-id)
+       (indentation-lexer input-port))]
 
-     [(:: delimiter)
+     [(:+ delimiter)
     ; =>
-    (begin (display "(PUNCT ")
-           (display lexeme)
-           (display ")")
-           (newline)
-           (basic-printing-lexer input-port))]
+    (begin 
+      (emit-id)
+      (display "(PUNCT ")
+      (display lexeme)
+      (display ")")
+      (newline)
+      (basic-printing-lexer input-port))]
+    
+     [#\space
+    ;=>
+      (begin
+        (emit-id)
+        (basic-printing-lexer input-port))]
 
+     [any-char
+    ;=>
+    (begin
+      (id-lexer (string-ref lexeme 0) input-port)
+      (basic-printing-lexer input-port))]
 
    ;[(repetition 1 +inf.0
     ;            (:or
@@ -455,10 +482,6 @@
      ;      (display lexeme)
       ;     (newline)
        ;    (basic-printing-lexer input-port))]
-
-   ;[#\space
-    ; =>
-    ;(basic-printing-lexer input-port)]
   
    ))
 
