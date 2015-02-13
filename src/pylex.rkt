@@ -393,9 +393,26 @@
       (basic-printing-lexer input-port))
     ]))
 
+<<<<<<< HEAD
+;comment lexer
+(define comment-lexer
+  (lexer
+   
+   [any-char
+    ;=>
+    (comment-lexer input-port)]
+   
+   [NEWLINE
+    ;=>
+    (basic-printing-lexer input-port)]))
+
+;main lexer
+  (define basic-printing-lexer
+=======
 
 ; This is the main lexer. It handles all kinds of python constructs  
 (define basic-printing-lexer
+>>>>>>> 2a84d0a0975c3fd8c3b6661e9812c61d57863727
   (lexer
    
    [(:+ string-quote)
@@ -488,6 +505,9 @@
       (emit-punct lexeme)
       (basic-printing-lexer input-port))]
 
+   ["#" 
+    ;=>
+    (comment-lexer input-port)
 
      [(:: keyword #\space)
     ; =>
