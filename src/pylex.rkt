@@ -61,8 +61,12 @@
 (define uname "")
 (define ucode "")
 (define unicode-code "")
+(define unicode-esp "\\")
 
 (define (get-unicode unicode-name)
+  ;(display "received name-#")
+  ;(display unicode-name)
+  ;(display "#")
 ;(while ( not (eof-object? (line (read-line unicode-data))))
 (while ( and (set! line (read-line unicode-data)) (not (eof-object? line)))
        (set! parsed-line (regexp-match #rx"^([0-9A-F]+);([^;]*);([^;]*);([^;]*);[^;]*;([^;]*);[^;]*;([^;]*);[^;]*;[^;]*;[^;]*;[^;]*;([^;]*);([^;]*);([^;]*)" line))
@@ -71,8 +75,8 @@
              (set! ucode (list-ref parsed-line 1))
              (if (equal? uname unicode-name) 
                  (begin
-                   (set! unicode-code (string-append "\\U" ucode))
-                   (display "Unicode - ")
+                   (set! unicode-code (string->symbol (string-append "\"\\" "U" ucode "\"")))
+                   ;(display "Unicode - \U0025")
                    (display unicode-code)
                    (break))
                  (void))
@@ -196,7 +200,7 @@
 (define raw-string-flag 0)
 (define escape-char "\\")
 (define unicode-parsing-flag 0)
-(define parsed-unicode-name " ")
+(define parsed-unicode-name "")
 (define app-string "")
 
 (define string-lexer
@@ -260,11 +264,8 @@
         ;This char is part of unicode name if unicode-parsing-flag is set
         [(equal? unicode-parsing-flag 1) 
          (begin 
-           (display parsed-unicode-name)
-           (string-append parsed-unicode-name lexeme)
-           (display "Appended string-")
-           ;(display lexeme)
-           (display parsed-unicode-name)
+           (set! parsed-unicode-name (string-append parsed-unicode-name lexeme))
+           ;(display parsed-unicode-name)
            ;Here Setting lexeme to null because we dont want it to display anything
            ;Other ways of handling involves complicated conditional checks
            (set! lexeme ""))])
