@@ -61,7 +61,7 @@
 (define uname "")
 (define ucode "")
 (define unicode-code "")
-(define unicode-esp "\\")
+
 
 (define (get-unicode unicode-name)
   ;(display "received name-#")
@@ -75,9 +75,11 @@
              (set! ucode (list-ref parsed-line 1))
              (if (equal? uname unicode-name) 
                  (begin
-                   (set! unicode-code (string->symbol (string-append "\"\\" "U" ucode "\"")))
-                   ;(display "Unicode - \U0025")
-                   (display unicode-code)
+                   (set! unicode-code (string->number  ucode 16))
+                   (set! unicode-code (integer->char unicode-code))
+                   (set! unicode-code (string unicode-code))
+                   ;integer->char () 
+                   ;string()
                    (break))
                  (void))
              ))
@@ -240,6 +242,7 @@
          (begin
            (get-unicode parsed-unicode-name)
            (display unicode-code)
+           (set! unicode-code "")
            (set! unicode-parsing-flag 0) 
            (string-lexer input-port))]
         
