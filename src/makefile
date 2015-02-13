@@ -3,3 +3,6 @@ all:
 clean:
 	`which rm` -rf compiled/
 	`which rm` pylex
+
+test:
+	./pylex test.py
