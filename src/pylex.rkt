@@ -11,8 +11,6 @@
 (require (prefix-in : parser-tools/lex-sre))
 (require (planet dyoo/while-loop))
 
-(define (output-endmarker? input-port)
-  (equal?   input-port))
 
 (define (unget port)
   (file-position port (- (file-position port) 1)))
@@ -114,12 +112,14 @@
            (cond 
              [(= (current-indent) current-spaces)
                (begin 
-                    (display "(DEDENT)")
-                    (newline)
+                    ;(display "(DEDENT)")
+                    ;(newline)
                     (set! flag #f))]
                
                [(begin 
                  (pop-indent!) 
+                 (display "(DEDENT)")
+                 (newline)
                  (if (and (not (equal? (current-indent) current-spaces)) (equal? (current-indent) 0))
                    (begin 
                      (display "INDENTATION ERROR")
@@ -137,6 +137,7 @@
   ;      (set! flag #f))
   ;    (void)))
         
+; Print all the dedents corresponding to stack entries
 (define (print-remaining-dedents)
          (while (not (equal? (current-indent) 0))
                 (begin
@@ -144,7 +145,6 @@
                   (newline)
                   (pop-indent!))))
   
-
 
 
 ;(define (top-stack-indent)
