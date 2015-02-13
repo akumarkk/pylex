@@ -309,6 +309,9 @@
                (newline)
                (basic-printing-lexer input-port ))]))]
    
+           [(:: "\\" NEWLINE)
+            (string-lexer input-port)]
+   
    ;Handle Unicode characters
    ;[(::(and ("\\N{" unicode-name "}")))
    [(:+ unicode-quote-start)
