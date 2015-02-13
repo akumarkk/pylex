@@ -269,6 +269,13 @@
                                                    
                           ))
 
+(define (emit-punct str)
+  (begin
+    (display "(PUNCT \"")
+    (display str)
+    (display "\")")
+    (newline)))
+
 (define string-lexer
   (lexer
    [ (:+ string-quote) 
@@ -377,6 +384,7 @@
         (begin
           (emit-id)
           (push-paren! lexeme)
+          (emit-punct lexeme)
           (basic-printing-lexer input-port))]
    
    [(:or #\) #\} #\])
@@ -384,6 +392,7 @@
         (begin
           (emit-id)
           (pop-paren! lexeme)
+          (emit-punct lexeme)
           (basic-printing-lexer input-port))]
    
    ; Treat normally. u or U has no special meaning in Python3 where as in
@@ -427,14 +436,11 @@
     ; =>
     (begin 
       (emit-id)
-      (display "(PUNCT ")
-      (display lexeme)
-      (display ")")
-      (newline)
+      (emit-punct lexeme)
       (basic-printing-lexer input-port))]
 
 
-     [(:+ keyword)
+     [(:: keyword)
     ; =>
     (begin 
       (emit-id)
@@ -450,14 +456,11 @@
        (emit-id)
        (indentation-lexer input-port))]
 
-     [(:+ delimiter)
+     [(:: delimiter)
     ; =>
     (begin 
       (emit-id)
-      (display "(PUNCT ")
-      (display lexeme)
-      (display ")")
-      (newline)
+      (emit-punct lexeme)
       (basic-printing-lexer input-port))]
     
      [#\space
