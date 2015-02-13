@@ -49,6 +49,33 @@
   (if (= current-spaces (current-indent)) (display "DEDENT")
       (if (> (current-indent) current-spaces) (display "INDENTATION ERROR") (handle-dedent!))))
 
+
+
+
+;unicode-get() : Reads UnicodeData.txt to map the unicode name to actual unicode 
+;TODO : Return error message if the unicode is not present UnicodeData.txt file
+
+(define unicode-data (open-input-file "/Users/akumarkk/Desktop/Compilers/pylex/src/UnicodeData.txt"))
+(define line 0)
+(define parsed-line 0)
+(define uname "")
+(define ucode "")
+(define unicode-code "")
+
+(define (get-unicode unicode-name)
+;(while ( not (eof-object? (line (read-line unicode-data))))
+(while ( and (set! line (read-line unicode-data)) (not (eof-object? line)))
+       (set! parsed-line (regexp-match #rx"^([0-9A-F]+);([^;]*);([^;]*);([^;]*);[^;]*;([^;]*);[^;]*;([^;]*);[^;]*;[^;]*;[^;]*;[^;]*;([^;]*);([^;]*);([^;]*)" line))
+
+             (set! uname (list-ref parsed-line 2))
+             (set! ucode (list-ref parsed-line 1))
+             (if (equal? uname unicode-name) 
+                 (begin
+                   (set! unicode-code (string-append "\\U" ucode))
+                   (break))
+                 (void))
+             ))
+
 ;measure-sapce!() - decides whether to push current-space into stack or not
 ; 1. Push only when current-space is greater than top of the stack
 ; 2. Pop() each item from the stack and compare against current-spaces.
@@ -108,6 +135,8 @@
                                  "&="    "|="    "^="    ">>="    "<<="    "**="))
 
 (define-lex-abbrev string-quote (:or "'''"       "\""""   "'"    "\"" ))
+(define-lex-abbrev unicode-quote-start (::    "\\"     "N"    "{"))
+(define-lex-abbrev unicode-quote-end (:: "}"))
 
 (define-lex-abbrev keyword (:or "False"    "None"    "True"    "and"    "as"
                                 "assert"   "break"   "class"   "continue"
@@ -154,11 +183,19 @@
 (define-lex-abbrev imagnumber (:: (or floatnumber intpart) (or "j" "J")))
 
 
+                     
+; string-lexer() : String literal lexer.
+; When ever quotes are encountered in basic-lexer, this is invoked.
+; It finds the end of the string and displays the string literal.
+; There are two types of string :
+;                   a. Raw String - escape each "\" in string literal 
+;                   b. Usual String literal - Replace unicode names with corresponding characters
 (define quote-char 0)
 (define raw-string-flag 0)
 (define escape-char "\\")
+(define unicode-parsing-flag 0)
+(define parsed-unicode-name "")
 
-; String literal lexer
 (define string-lexer
   (lexer
    [ (:+ string-quote) 
@@ -180,18 +217,44 @@
                (newline)
                (basic-printing-lexer input-port ))]))]
    
+   ;Handle Unicode characters
+   ;[(::(and ("\\N{" unicode-name "}")))
+   [(:+ unicode-quote-start)
+    ;=>
+    (begin
+      (set! unicode-parsing-flag 1)
+      (string-lexer input-port))]
+      
+    [(:+ unicode-quote-end)
+    ;=>
+    (begin
+      (cond
+        [(equal? unicode-parsing-flag 1) 
+         (begin
+           (get-unicode parsed-unicode-name)
+           (display unicode-code)
+           (set! unicode-parsing-flag 0) 
+           (string-lexer input-port))]
+        
+        [(begin
+           (display lexeme)
+           (string-lexer input-port))]))]
+        
+        
+      
+   
    [any-char 
     ;=>
     (begin
-      (if (and (equal? lexeme escape-char) (equal? raw-string-flag 1))
+      (cond
+        [(and (equal? lexeme escape-char) (equal? raw-string-flag 1))
           (begin
-            (string-append lexeme escape-char)) 
-          (void))
+            (string-append lexeme escape-char))])
       (display lexeme)
       (string-lexer input-port))]))
       
    
-   
+; Indentation lexer
 (define indentation-lexer
   (lexer
    [#\space
@@ -304,7 +367,7 @@
 \"Hello\"         (pqrs} 'Hi'
 ide
  '''MNO'''
-        another id r\"testing\\n \u2660\"   Computing"))
+        another id r\"testing\\n \u2660\"   \\N{PERCENT SIGN} Computing"))
 (basic-printing-lexer in)
 
 
