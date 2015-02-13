@@ -128,7 +128,7 @@
 ;  (set! indent-top  (car indent-stack)))
 
 
-(define-lex-abbrev NEWLINE (:or "#\newline" "\n"))
+(define-lex-abbrev NEWLINE (:or "#\newline" "\n" "\r" "\r\n"))
 
 (define-lex-abbrev hash-comment ("#"))
 
@@ -269,6 +269,15 @@
                                                    
                           ))
 
+;To display punct lexemes
+(define (emit-punct str)
+  (begin
+    (display "(PUNCT \"")
+    (display str)
+    (display "\")")
+    (newline)))
+
+;String-lexer
 (define string-lexer
   (lexer
    [ (:+ string-quote) 
@@ -379,6 +388,7 @@
         (begin
           (emit-id)
           (push-paren! lexeme)
+          (emit-punct lexeme)
           (basic-printing-lexer input-port))]
    
    [(:or #\) #\} #\])
@@ -386,6 +396,7 @@
         (begin
           (emit-id)
           (pop-paren! lexeme)
+          (emit-punct lexeme)
           (basic-printing-lexer input-port))]
    
    [(:or decimalinteger hexinteger octinteger bininteger floatnumber imagnumber) 
@@ -450,14 +461,11 @@
     ; =>
     (begin 
       (emit-id)
-      (display "(PUNCT ")
-      (display lexeme)
-      (display ")")
-      (newline)
+      (emit-punct lexeme)
       (basic-printing-lexer input-port))]
 
 
-     [(:+ keyword)
+     [(:: keyword #\space)
     ; =>
     (begin 
       (emit-id)
@@ -467,6 +475,11 @@
       (newline)
       (basic-printing-lexer input-port))]
      
+     ;explicit line joining
+     [(:: "\\" NEWLINE)
+      ;=>
+      (basic-printing-lexer input-port)]
+     
      [(:+ NEWLINE)
       ;=>
       (begin
@@ -475,14 +488,11 @@
        (newline)
        (indentation-lexer input-port))]
 
-     [(:+ delimiter)
+     [(:: delimiter)
     ; =>
     (begin 
       (emit-id)
-      (display "(PUNCT ")
-      (display lexeme)
-      (display ")")
-      (newline)
+      (emit-punct lexeme)
       (basic-printing-lexer input-port))]
     
      [#\space
