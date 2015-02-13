@@ -1,9 +1,4 @@
-+  a     bc          -
-     utah;
-        university
-     BANGALORE
-     school
-Hello         (pqrs) 'Hi'
-ide
- '''MNO'''
-        another id
+def testfunction():
+    strvar = "Anil UVCE"
+    printvar = "Test var \N{PERCENT SIGN} Unicode chars"
+    print printvar
