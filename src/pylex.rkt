@@ -1,5 +1,5 @@
 	    ; Anil Kumar Konasale krishna
-	    :	akumarkk@cs.utah.edu 
+	    ;	akumarkk@cs.utah.edu 
 	    ;	    UID - u0939372
 
 	    ; Sahana Sandeep
