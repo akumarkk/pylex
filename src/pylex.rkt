@@ -142,7 +142,24 @@
                                  "+="    "-="    "*="    "/="     "//="    "%="
                                  "&="    "|="    "^="    ">>="    "<<="    "**="))
 
-(define-lex-abbrev string-quote (:or "'''"       "\""""   "'"    "\"" ))
+(define-lex-abbrev string-quote (:or  "'''"         "\"\"\""         "'"         "\""))
+
+(define-lex-abbrev one-string-quote (:or "b'''"       "b\"\"\""         "b'"        "b\""
+                                      "B'''"       "B\"\"\""         "B'"        "B\""
+                                      "u'''"       "u\"\"\""         "u'"        "u\""
+                                      "U'''"       "U\"\"\""         "U'"        "U\""))
+
+(define-lex-abbrev raw1-string-quote(:or  "r'''"       "r\"\"\""         "r'"        "r\""
+                                           "R'''"       "R\"\"\""         "R'"        "R\""))
+                                     
+(define-lex-abbrev raw2-string-quote (:or  "br'''"       "br\"\"\""   "br'"    "br\""
+                                          "Br'''"       "Br\"\"\""   "Br'"    "Br\""
+                                          "BR'''"       "BR\"\"\""   "BR'"    "BR\""
+                                          "br'''"       "br\"\"\""   "br'"    "br\""))
+
+
+
+
 (define-lex-abbrev unicode-quote-start (::    "\\"     "N"    "{"))
 (define-lex-abbrev unicode-quote-end (:: "}"))
 
@@ -216,7 +233,7 @@
                                 (other-id-continue? char)))
 (define (xid-start? char) (and (id-start? char)
                                (id-start? (string-ref (string-normalize-nfkc (string char)) 0))
-                               (andmap xid-continue? (string->list (string-normalize-nfkc (string char))))))
+                               (xid-continue? (car (string->list (string-normalize-nfkc (string char)))))))
                        
 (define (xid-continue? char) (and (id-continue? char)
                                   (id-continue? (car (string->list (string-normalize-nfkc (string char)))))))
@@ -225,13 +242,24 @@
 
 ;flag to check if first char of indentifier
 (define first-char 0)
-(define (id-lexer port) (cond
-                          [(and (xid-start? (read-char port)) (equal? first-char 0))
+(define (id-lexer id-char) 
+                       (cond
+                          [(and (xid-start? id-char) (equal? first-char 0))
                            (begin
-                             (set! id-string (string-append id-string (string (read-char port))))
+                             (display "Processing#")
+                             (display id-char)
+                             (newline)
+                             (set! id-string (string-append id-string (string id-char)))
+                             (display id-string)
                              (set! first-char 1))]
                           
-                          [(xid-continue? (read-char port)) (set! id-string (string-append id-string (string (read-char port))))]
+                          [(xid-continue? id-char) 
+                           (begin
+                             (display "id-string#")
+                             (display id-string)
+                             (set! id-string (string-append id-string (string id-char)))
+                             (display "xid-continue#")
+                             (display id-string))]
 
                           [ (and (> (string-length id-string) 0) (xid-start? (string-ref id-string 0)))
                                    (begin
@@ -358,16 +386,18 @@
    ; Treat normally. u or U has no special meaning in Python3 where as in
    ; Python2 it was required to interpret unicode characters. Otherwise string
    ; is treated as raw string in python
-   [(:or (:: #\u string-quote)   (:: #\U string-quote) 
-         (:: #\b string-quote)   (:: #\B string-quote))
+   [(:+ one-string-quote)
     ;=>
     (begin 
       (display "(LIT ")
+      (display "matched#")
+      (display lexeme)
+      (newline)
       (set! quote-char (substring lexeme 1))
       (set! raw-string-flag 0)
       (string-lexer input-port ))]
    
-   [(:or (:: #\r string-quote)   (:: #\R string-quote))
+   [(:+ raw1-string-quote) 
     ;=>
     (begin 
       (display "(LIT ")
@@ -376,9 +406,7 @@
       (string-lexer input-port ))]
     
      
-   [(:or (:: "br" string-quote)  (:: "Br" string-quote)   (:: "BR" string-quote) 
-         (:: "rb" string-quote)  (:: "rB" string-quote)   (:: "Rb" string-quote)
-         (:: "Rb" string-quote))
+   [(:+ raw2-string-quote)
     ;=>
     (begin 
       (display "(LIT ")
@@ -437,7 +465,10 @@
    [any-char
     ;=>
     (begin
-      (id-lexer input-port)
+      (display "Invoking id-lexer#")
+      (display (string-ref lexeme 0))
+      (newline)
+      (id-lexer (string-ref lexeme 0))
       (basic-printing-lexer input-port))]
    ))
 
@@ -445,9 +476,9 @@
   (push-indent! current-spaces)
   (when (not (eq? 'eof (basic-printing-lexer port)))
     (run-basic-printing-lexer port)))
-(run-basic-printing-lexer (open-input-string "zoo"))
+(run-basic-printing-lexer (open-input-file "test.py"))
 
-(define in (open-input-file "test.py"))
-(basic-printing-lexer in)
+;(define in (open-input-file "test.py"))
+;(basic-printing-lexer in)
 
 
